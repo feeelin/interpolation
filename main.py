@@ -2,10 +2,10 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import numpy as np
+from scipy import interpolate
 
 
 class MainApp(tk.Tk):
-
     def __init__(self):
         super().__init__()
 
@@ -34,7 +34,7 @@ class MainApp(tk.Tk):
         self.methodsLabel = Label(text='Выберите метод')
         self.findLabel = Label(text='Введите точку рассчёта')
         self.methodChoose = ttk.Combobox(self, textvariable=self.choosenMethod, width=17)
-        self.methods = ['Метод Лагранжа', 'Метод Ньютона', 'Метод кубических сплайнов']
+        self.methods = ['Метод Лагранжа', 'Метод Ньютона']
         self.methodChoose['values'] = self.methods
         self.findEnter = Entry(textvariable=self.findX, width=17)
         self.continueButton = Button(text='Продолжить', command=self.interpolate, pady=5)
@@ -47,6 +47,10 @@ class MainApp(tk.Tk):
         self.y = None
 
     def spawn(self):
+        if int(self.countEnter.get()) >= 5:
+            self.methods = ['Метод Лагранжа', 'Метод Ньютона', 'Метод кубических сплайнов']
+            self.methodChoose['values'] = self.methods
+
         self.countEnter.grid_remove()
         self.spawnButton.grid_remove()
         self.xyLabels.grid(row=1, column=1)
@@ -75,14 +79,24 @@ class MainApp(tk.Tk):
         self.continueButton.grid(row=self.n + 5, column=2)
 
     def interpolate(self):
+        self.answerTitle.grid(row=self.n + 6, column=1)
+        self.AnswerLabel.grid(row=self.n + 6, column=2)
+
+        self.x_arr = []
+        self.y_arr = []
+
         for i in range(self.n):
             self.x_arr.append(self.x[i].get())
             self.y_arr.append(self.y[i].get())
 
         if self.choosenMethod.get() == self.methods[0]:
-            self.answerTitle.grid(row=self.n + 6, column=1)
-            self.AnswerLabel.grid(row=self.n + 6, column=2)
             self.answer.set(self.lagrange() ** (1 / 2))
+
+        elif self.choosenMethod.get() == self.methods[1]:
+            self.answer.set(self.newton())
+
+        elif self.choosenMethod.get() == self.methods[2]:
+            self.answer.set(self.qubicSplines())
 
     def lagrange(self):
         def _basis(j):
@@ -93,6 +107,29 @@ class MainApp(tk.Tk):
                 len(self.x_arr) == len(self.y_arr))
         k = len(self.x_arr)
         return sum(_basis(j) * self.y_arr[j] for j in range(k))
+
+    def newton(self):
+        def _poly_newton_coefficient():
+            m = len(self.x_arr)
+            x = np.copy(self.x_arr)
+            a = np.copy(self.y_arr)
+            for k in range(1, m):
+                a[k:m] = (a[k:m] - a[k - 1]) / (x[k:m] - x[k - 1])
+            return a
+
+        def newton_polynomial():
+            a = _poly_newton_coefficient()
+            n = len(self.x_arr) - 1  # Degree of polynomial
+            p = a[n]
+            for k in range(1, n + 1):
+                p = a[n - k] + (self.findX.get() - self.x_arr[n - k]) * p
+            return p
+
+        return newton_polynomial()
+
+    def qubicSplines(self):
+        tck = interpolate.splrep(self.x_arr, self.y_arr)
+        return interpolate.splev(self.findX.get(), tck)
 
 
 if __name__ == '__main__':
