@@ -9,12 +9,12 @@ class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title('Интерполирование')
+        self.title('Interpolation')
         self.n_string = IntVar()
         self.n_string.set(1)
 
         self.countEnter = Entry(textvariable=self.n_string)
-        self.spawnButton = Button(text='Создать', command=self.spawn)
+        self.spawnButton = Button(text='Create', command=self.spawn)
 
         self.countEnter.grid(row=1, column=1, padx=10, pady=5)
         self.spawnButton.grid(row=1, column=2, padx=10)
@@ -30,16 +30,16 @@ class MainApp(tk.Tk):
         self.xEnters = []
         self.x = []
 
-        self.xyLabels = Label(text='Введите координаты точек')
-        self.methodsLabel = Label(text='Выберите метод')
-        self.findLabel = Label(text='Введите точку рассчёта')
+        self.xyLabels = Label(text='Enter a points coordinates')
+        self.methodsLabel = Label(text='Choose a method')
+        self.findLabel = Label(text='Enter a calculation point')
         self.methodChoose = ttk.Combobox(self, textvariable=self.choosenMethod, width=17)
-        self.methods = ['Метод Лагранжа', 'Метод Ньютона']
+        self.methods = ["Lagrange's method", "Newton's method"]
         self.methodChoose['values'] = self.methods
         self.findEnter = Entry(textvariable=self.findX, width=17)
-        self.continueButton = Button(text='Продолжить', command=self.interpolate, pady=5)
+        self.continueButton = Button(text='Continue', command=self.interpolate, pady=5)
 
-        self.answerTitle = Label(text='Ответ:')
+        self.answerTitle = Label(text='Answer:')
         self.AnswerLabel = Label(textvariable=self.answer)
 
         self.n = None
@@ -48,7 +48,7 @@ class MainApp(tk.Tk):
 
     def spawn(self):
         if int(self.countEnter.get()) >= 5:
-            self.methods = ['Метод Лагранжа', 'Метод Ньютона', 'Метод кубических сплайнов']
+            self.methods = ["Lagrange's method", "Newton's method", "Cubic splines"]
             self.methodChoose['values'] = self.methods
 
         self.countEnter.grid_remove()
@@ -90,13 +90,13 @@ class MainApp(tk.Tk):
             self.y_arr.append(self.y[i].get())
 
         if self.choosenMethod.get() == self.methods[0]:
-            self.answer.set(self.lagrange() ** (1 / 2))
+            self.answer.set(int(self.lagrange() ** (1 / 2)))
 
         elif self.choosenMethod.get() == self.methods[1]:
-            self.answer.set(self.newton())
+            self.answer.set(int(self.newton()))
 
         elif self.choosenMethod.get() == self.methods[2]:
-            self.answer.set(self.qubicSplines())
+            self.answer.set(int(self.cubicSplines()))
 
     def lagrange(self):
         def _basis(j):
@@ -127,7 +127,7 @@ class MainApp(tk.Tk):
 
         return newton_polynomial()
 
-    def qubicSplines(self):
+    def cubicSplines(self):
         tck = interpolate.splrep(self.x_arr, self.y_arr)
         return interpolate.splev(self.findX.get(), tck)
 
